@@ -8,18 +8,19 @@
     }
     var Immediate = Immediate || window.setImmediate || window.requestAnimationFrame || setTimeout
     var append = function (elm) {
-        var wrap = document.createElement('nimo-loader');
-        wrap.createShadowRoot = wrap.attachShadow || wrap.createShadowRoot
-        wrap = wrap.createShadowRoot({
-            mode: 'closed'
-        });
+            var wrap = document.createElement('nimo-loader');
+            wrap.createShadowRoot = wrap.attachShadow || wrap.createShadowRoot
+            wrap = wrap.createShadowRoot({
+                mode: 'closed'
+            });
 
-        wrap.innerHTML = foo.style
-        var cover = document.createElement('nimo-loader-cover');
-        wrap.append(cover)
-        cover.appendChild(elm)
-        return wrap;
-    },
+            wrap.innerHTML = foo.style
+            var cover = document.createElement('nimo-loader-cover');
+            // console.dir(wrap)
+            wrap.appendChild(cover)
+            cover.appendChild(elm)
+            return wrap;
+        },
         resolveQueue = function (queue, r) {
             return new Promise(function (_r) {
                 _r = r || _r || new Function()
@@ -103,13 +104,18 @@
 
         Progress = function (type, config) {
             if ('number' === typeof config) {
-                config = { max: config }
+                config = {
+                    max: config
+                }
             } else if (config instanceof Object) {
                 //
             } else {
                 config = {}
             }
-            config.__proto__ = { max: 100, autoclear: true }
+            config.__proto__ = {
+                max: 100,
+                autoclear: true
+            }
             config.max = Number(config.max) || config.__proto__.max
             this.clear = function () {
                 if (!this.node.isConnected) {
@@ -179,16 +185,16 @@
                             Immediate(function () {
                                 if ('function' === typeof _t.onprogress) {
                                     _t.onprogress(Number(i.toFixed(1)), _t);
-                            }
+                                }
                             }, 0)
                         }
 
                         // var oldProg = this.progress
-                            // if (condition) {
-                            //    for (var i = oldProg; prog >= i; i++) {
-                            m(prog)
-                            // }
-                            // }
+                        // if (condition) {
+                        //    for (var i = oldProg; prog >= i; i++) {
+                        m(prog)
+                        // }
+                        // }
                         this.progress = prog
                         setTimeout(function () {
                             if (prog >= 100) {
@@ -204,11 +210,11 @@
                 }
                 this.insertValue = value(true)
                 this.updateValue = value(false)
-this.max =function (num) {
-    num = Number(num)||config.__proto__.max;
-    config.max=num
-return num
-}
+                this.max = function (num) {
+                    num = Number(num) || config.__proto__.max;
+                    config.max = num
+                    return num
+                }
                 this.oncomplete = null
                 this.onprogress = null
                 this.progress = new Number(0)
@@ -269,9 +275,10 @@ return num
         this.indeterminate = initAction('indeterminate', this)
         this.progress = initAction('progress', this)
     }
-    
+
     foo.style = `
-    <style>nimo-loader-cover[clear=true] {
+    <style>
+nimo-loader-cover[clear=true] {
     opacity: 0;
 }
 
