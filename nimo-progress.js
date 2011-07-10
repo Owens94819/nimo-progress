@@ -1,19 +1,19 @@
 (function () {
     var foo = {}
     var main = 251.32;
-    var $Immediate =function (e) {
+    var $Immediate = function (e) {
         new Promise(function (r) {
             r()
         }).then(e)
     }
-    var Immediate = Immediate||window.setImmediate || window.requestAnimationFrame || setTimeout
+    var Immediate = Immediate || window.setImmediate || window.requestAnimationFrame || setTimeout
     var append = function (elm) {
         var wrap = document.createElement('nimo-loader');
         wrap.createShadowRoot = wrap.attachShadow || wrap.createShadowRoot
         wrap = wrap.createShadowRoot({
             mode: 'closed'
         });
-        
+
         wrap.innerHTML = foo.style
         var cover = document.createElement('nimo-loader-cover');
         wrap.append(cover)
@@ -80,7 +80,7 @@
                 return append(elm)
             }
         },
-        initAction = function (type,t) {
+        initAction = function (type, t) {
             return function (text, max) {
                 var elm = new InitElement(text)[type]();
                 if (foo.busy) {
@@ -88,20 +88,15 @@
                 } else {
                     items.push = push
                 }
-              var val = new Progress(type, max);
+                var val = new Progress(type, max);
                 val.__proto__ = {
                     node: elm
                 }
+                val.__proto__.index = items.length;
                 items.push([type, arguments, elm, [], val])
-                val.__proto__.index = log.push([val, elm])
-                val.__proto__.__proto__=t;
+                log.push([val, elm])
+                val.__proto__.__proto__ = t;
                 Object.freeze(val.__proto__)
-
-                Immediate(function () {
-                    if ('function' === typeof val.onload) {
-                        val.onload(val)
-                    }
-                }, 0)
                 return val;
             }
         },
@@ -154,6 +149,7 @@
                         txt = text.text + txt;
                     } else {
                         txt = toValidText(txt)
+                        text.text = txt
                     }
                     elm.innerText = txt;
                 }
@@ -174,17 +170,28 @@
 
                         var prog = factor_invert(num, config.max, 100)
                         num = factor_invert(num, config.max, main)
+
                         var elm = this.node.querySelector('nimo-loader-body nimo-loader-icon svg .nimo-progress-circular__primary')
                         if (elm) {
                             elm.style.strokeDasharray = `${num}%, ${main}%`
                         }
-                        Immediate(function () {
-                            if ('function' === typeof _t.onprogress) {
-                                _t.onprogress(prog);
+                        var m = function (i) {
+                            Immediate(function () {
+                                if ('function' === typeof _t.onprogress) {
+                                    _t.onprogress(Number(i.toFixed(1)), _t);
                             }
-                        },0)
+                            }, 0)
+                        }
+
+                        // var oldProg = this.progress
+                            // if (condition) {
+                            //    for (var i = oldProg; prog >= i; i++) {
+                            m(prog)
+                            // }
+                            // }
+                        this.progress = prog
                         setTimeout(function () {
-                            if (num >= main) {
+                            if (prog >= 100) {
                                 if ('function' === typeof _t.oncomplete) {
                                     _t.oncomplete(_t);
                                 }
@@ -197,8 +204,14 @@
                 }
                 this.insertValue = value(true)
                 this.updateValue = value(false)
+this.max =function (num) {
+    num = Number(num)||config.__proto__.max;
+    config.max=num
+return num
+}
                 this.oncomplete = null
                 this.onprogress = null
+                this.progress = new Number(0)
             }
             this.onload = null
         },
@@ -212,6 +225,11 @@
             var text = argument[0]
             append.init(elm)
             items.length += 1;
+            Immediate(function () {
+                if ('function' === typeof val.onload) {
+                    val.onload(val)
+                }
+            }, 0)
             for (var i = 0; i < actions.length; i++) {
                 var d = actions[i];
                 val[d]()
@@ -229,7 +247,7 @@
     }
     var log = new FakeArray(),
         items = new FakeArray(),
-    queue = [];
+        queue = [];
 
     append.init = function (elm) {
         elm = elm.host
@@ -248,15 +266,163 @@
             e[0].clear()
             delete log[i];
         }
-        this.indeterminate = initAction('indeterminate',this)
-        this.progress = initAction('progress',this)
+        this.indeterminate = initAction('indeterminate', this)
+        this.progress = initAction('progress', this)
     }
-    foo.style = `<style> nimo-loader-cover[clear=true] {opacity: 0;}[nimo-loader-is-active=true] {     pointer-events: none; } nimo-loader-cover {position: fixed;     z-index: 9999999;     top: 0;     left: 0;     width: 100vw;     height: 100vh;     background: rgba(0, 0, 0, 0.15);     display: flex;     justify-content: center;     align-items: center; } nimo-loader-body {   background: white;     display: flex;     align-items: center;     flex-direction: row;     border-radius: 8px;     padding: 6px 10px;     -webkit-border-radius: 8px;     -moz-border-radius: 8px;     -ms-border-radius: 8px;     -o-border-radius: 8px;         box-shadow: 0px 0px 6px -5px; } nimo-loader-text {      color: #000000;   margin-right: 10px;     min-width: 150px;     display: block;     font-weight: 400;     font-size: 14px;     font-family: sans-serif;     /* text-transform: capitalize; */ } nimo-loader-icon {     display: flex;     width: 50px;     height: 50px;       align-items: center;     /*stroke-width: 1px;*/     stroke: currentColor;         justify-content: center; } ons-toolbar {     z-index: 0; } .nimo-progress-circular {     height: 32px;     position: relative;     width: 32px;     transform: rotate(270deg);     animation: none; } .nimo-progress-circular__background, .nimo-progress-circular__primary, .nimo-progress-circular__secondary {     /*clean-cssignore:;     start*/     cx: 50%;     cy: 50%;     r: 40%;     /*clean-cssignore:;     end*/     animation: none;     fill: none;     /*stroke-width: 5%;     */     stroke-miterlimit: 10;     -webkit-animation: none; } .nimo-progress-circular__background {     /* transparent */     /* stroke: var(--progress-circle-background-color); */     opacity: 0; }nimo-loader-icon[progress] .nimo-progress-circular__background{opacity: 0.3;} .nimo-progress-circular__primary {     stroke-dasharray: 1, 200;     stroke-dashoffset: 0;     /* --color-primary */     /* stroke: var(--progress-circle-primary-color); */     transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); } .nimo-progress-circular__secondary {     /*  opec --color-primary */     /* stroke: var(--progress-circle-secondary-color); */     opacity: 0.5; } .nimo-progress-circular--indeterminate {     animation: nimo-progress__rotate 2s linear infinite;     transform: none;     -webkit-animation: nimo-progress__rotate 2s linear infinite; } .nimo-progress-circular--indeterminate__primary {     animation: nimo-progress__dash 1.5s ease-in-out infinite;     -webkit-animation: nimo-progress__dash 1.5s ease-in-out infinite; } .nimo-progress-circular--indeterminate__secondary {     display: none; } @keyframes nimo-progress__rotate {     100% {         transform: rotate(360deg);     } } @keyframes nimo-progress__dash {     0% {         stroke-dasharray: 10%, 241.32%;         stroke-dashoffset: 0;     }     50% {         stroke-dasharray: 201%, 50.322%;         stroke-dashoffset: -100%;     }     100% {         stroke-dasharray: 10%, 241.32%;         stroke-dashoffset: -251.32%;     } } </style>            `
+    
+    foo.style = `
+    <style>nimo-loader-cover[clear=true] {
+    opacity: 0;
+}
+
+[nimo-loader-is-active=true] {
+    pointer-events: none;
+}
+
+nimo-loader-cover {
+    position: fixed;
+    z-index: 9999999;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+nimo-loader-body {
+    background: white;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    border-radius: 8px;
+    padding: 12px 18px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    -ms-border-radius: 8px;
+    -o-border-radius: 8px;
+    box-shadow: 0px 0px 6px -5px;
+}
+
+nimo-loader-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000000;
+    margin-right: 20px;
+    width: 220px;
+    display: block;
+    font-weight: 400;
+    font-size: 14px;
+    font-family: sans-serif;
+    /* text-transform: capitalize; */
+}
+
+nimo-loader-icon {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    align-items: center;
+    /*stroke-width: 1px;*/
+    stroke: currentColor;
+    justify-content: flex-end;
+}
+
+ons-toolbar {
+    z-index: 0;
+}
+
+.nimo-progress-circular {
+    height: 35px;
+    position: relative;
+    width: 35px;
+    transform: rotate(270deg);
+    animation: none;
+}
+
+.nimo-progress-circular__background, .nimo-progress-circular__primary, .nimo-progress-circular__secondary {
+    /*clean-cssignore:;     start*/
+    cx: 50%;
+    cy: 50%;
+    r: 40%;
+    /*clean-cssignore:;     end*/
+    animation: none;
+    fill: none;
+    /*stroke-width: 5%;     */
+    stroke-miterlimit: 10;
+    -webkit-animation: none;
+}
+
+.nimo-progress-circular__background {
+    /* transparent */
+    /* stroke: var(--progress-circle-background-color); */
+    opacity: 0;
+}
+
+nimo-loader-icon[progress] .nimo-progress-circular__background {
+    opacity: 0.3;
+}
+
+.nimo-progress-circular__primary {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+    /* --color-primary */
+    /* stroke: var(--progress-circle-primary-color); */
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nimo-progress-circular__secondary {
+    /*  opec --color-primary */
+    /* stroke: var(--progress-circle-secondary-color); */
+    opacity: 0.5;
+}
+
+.nimo-progress-circular--indeterminate {
+    animation: nimo-progress__rotate 2s linear infinite;
+    transform: none;
+    -webkit-animation: nimo-progress__rotate 2s linear infinite;
+}
+
+.nimo-progress-circular--indeterminate__primary {
+    animation: nimo-progress__dash 1.5s ease-in-out infinite;
+    -webkit-animation: nimo-progress__dash 1.5s ease-in-out infinite;
+}
+
+.nimo-progress-circular--indeterminate__secondary {
+    display: none;
+}
+
+@keyframes nimo-progress__rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes nimo-progress__dash {
+    0% {
+        stroke-dasharray: 10%, 241.32%;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 201%, 50.322%;
+        stroke-dashoffset: -100%;
+    }
+
+    100% {
+        stroke-dasharray: 10%, 241.32%;
+        stroke-dashoffset: -251.32%;
+    }
+}
+
+</style>
+    `;
     window.NimoProgress = NimoLoader
 })();
 
 
-    
+/*** uncomment the following code ***/
 // new NimoProgress().progress('saving file...', 100).onload = function (d) {
 //     d.indeterminate('re-rendering items...').onload=function (d) {}
 //     d.insertTitle(` (0/100%)`)
